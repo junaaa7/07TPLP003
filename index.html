@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Ujian Online - Pemrograman Web</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 30px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Quiz Styles */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg-color);
+            font-weight: bold;
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: var(--border-color);
+            border-radius: 10px;
+            height: 8px;
+            margin-bottom: 25px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
+        .question {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options-list {
+            list-style: none;
+        }
+
+        .option-item {
+            background: var(--bg-color);
+            padding: 14px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item:hover {
+            background: #e2e8f0;
+        }
+
+        .option-item.selected {
+            background: #dbeafe;
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .option-prefix {
+            font-weight: bold;
+            margin-right: 10px;
+            background: var(--primary-color);
+            color: white;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            font-size: 14px;
+        }
+
+        /* Button Styles */
+        btn, button {
+            display: block;
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        btn:hover, button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .nav-btns {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .nav-btns button {
+            flex: 1;
+        }
+
+        .btn-prev {
+            background-color: #64748b;
+        }
+        .btn-prev:hover {
+            background-color: #475569;
+        }
+
+        /* Result Styles */
+        .result-box {
+            text-align: center;
+        }
+
+        .identity-summary {
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: #f0fdf4;
+            border: 5px solid #22c55e;
+            color: #15803d;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+        }
+
+        .score-num {
+            font-size: 48px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 1. HALAMAN REGISTRASI -->
+    <div id="auth-page">
+        <h1>Ujian Online Pemrograman Web</h1>
+        <p style="text-align: center; margin-bottom: 25px; color: #64748b;">Silahkan isi identitas Anda sebelum memulai ujian.</p>
+        <form id="regForm" onsubmit="startQuiz(event)">
+            <div class="form-group">
+                <label for="nama">Nama Lengkap</label>
+                <input type="text" id="nama" required autocomplete="off" placeholder="Masukkan nama lengkap">
+            </div>
+            <div class="form-group">
+                <label for="nim">NIM (Nomor Induk Mahasiswa)</label>
+                <input type="text" id="nim" required autocomplete="off" placeholder="Masukkan NIM">
+            </div>
+            <div class="form-group">
+                <label for="kelas">Kelas</label>
+                <input type="text" id="kelas" required autocomplete="off" placeholder="Masukkan kelas (contoh: IF-4A)">
+            </div>
+            <button type="submit" style="margin-top: 10px;">Mulai Ujian</button>
+        </form>
+    </div>
+
+    <!-- 2. HALAMAN SOAL -->
+    <div id="quiz-page" class="hidden">
+        <div class="quiz-header">
+            <span id="display-mhs">Mhs: -</span>
+            <span id="question-counter">Soal 1 dari 50</span>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" id="p-bar"></div>
+        </div>
+        <div id="quiz-body">
+            <div class="question" id="question-text">Memuat soal...</div>
+            <ul class="options-list" id="options-container">
+                <!-- Pilihan jawaban di-render lewat JS -->
+            </ul>
+        </div>
+        <div class="nav-btns">
+            <button class="btn-prev hidden" id="btn-prev" onclick="prevQuestion()">Kembali</button>
+            <button id="btn-next" onclick="nextQuestion()">Lanjut</button>
+        </div>
+    </div>
+
+    <!-- 3. HALAMAN HASIL -->
+    <div id="result-page" class="hidden" class="result-box">
+        <h2>Ujian Selesai!</h2>
+        <div class="identity-summary">
+            <p><strong>Nama:</strong> <span id="res-nama"></span></p>
+            <p><strong>NIM:</strong> <span id="res-nim"></span></p>
+            <p><strong>Kelas:</strong> <span id="res-kelas"></span></p>
+            <p><strong>Waktu Selesai:</strong> <span id="res-waktu"></span></p>
+        </div>
+        <div class="score-circle">
+            <span class="score-num" id="final-score">0</span>
+            <span>Skor Anda</span>
+        </div>
+        <p style="margin-top: 15px; margin-bottom: 25px;" id="score-summary"></p>
+        <button onclick="location.reload()">Ulangi Ujian</button>
+    </div>
+</div>
+
+<script>
+    // DATA 50 SOAL PEMROGRAMAN WEB
+    const questions = [
+        { q: "Apa kepanjangan dari HTML?", o: ["Hyper Text Markup Language", "High Text Markup Language", "Hyper Tabular Markup Language", "Hyperlinks and Text Markup Language"], a: 0 },
+        { q: "Tag HTML mana yang digunakan untuk membuat judul (heading) terbesar?", o: ["&lt;heading&gt;", "&lt;h6&gt;", "&lt;head&gt;", "&lt;h1&gt;"], a: 3 },
+        { q: "Karakter mana yang digunakan untuk menandai tag akhir (closing tag)?", o: ["*", "/", "&lt;", "^"], a: 1 },
+        { q: "Apa kepanjangan dari CSS?", o: ["Creative Style Sheets", "Cascading Style Sheets", "Computer Style Sheets", "Colorful Style Sheets"], a: 1 },
+        { q: "Atribut HTML mana yang digunakan untuk menentukan gaya inline?", o: ["styles", "font", "class", "style"], a: 3 },
+        { q: "Sintaks CSS mana yang benar untuk mengubah warna latar belakang body?", o: ["body {background-color: yellow;}", "body:color = yellow;", "{body;background-color:yellow;}", "body:background-color: yellow;"], a: 0 },
+        { q: "Di dalam tag HTML mana kita meletakkan kode JavaScript internal?", o: ["&lt;javascript&gt;", "&lt;js&gt;", "&lt;script&gt;", "&lt;scripting&gt;"], a: 2 },
+        { q: "Bagaimana cara menulis pernyataan 'Hello World' di dalam alert box JavaScript?", o: ["msg('Hello World');", "alertBox('Hello World');", "msgBox('Hello World');", "alert('Hello World');"], a: 4 ? 3 : 3 }, // index 3 adalah alert()
+        { q: "Bagaimana cara membuat fungsi di JavaScript?", o: ["function myFunction()", "function:myFunction()", "function = myFunction()", "new function()"], a: 0 },
+        { q: "Bagaimana cara menulis pernyataan IF di JavaScript?", o: ["if i = 5 then", "if (i == 5)", "if i == 5 then", "if i = 5"], a: 1 },
+        { q: "Protokol mana yang umumnya digunakan untuk mengirimkan halaman web?", o: ["FTP", "SMTP", "HTTP", "SSH"], a: 2 },
+        { q: "Atribut mana yang digunakan untuk membuat link/tautan terbuka di tab baru?", o: ["target='_new'", "target='_blank'", "href='new'", "window='blank'"], a: 1 },
+        { q: "Tag HTML yang benar untuk membuat list dengan bullet (unordered) adalah...", o: ["&lt;ol&gt;", "&lt;list&gt;", "&lt;ul&gt;", "&lt;dl&gt;"], a: 2 },
+        { q: "Bagaimana cara membuat checkbox di HTML?", o: ["&lt;input type='checkbox'&gt;", "&lt;checkbox&gt;", "&lt;input type='check'&gt;", "&lt;check&gt;"], a: 0 },
+        { q: "Atribut mana yang digunakan untuk mendefinisikan teks alternatif jika gambar tidak muncul?", o: ["title", "alt", "src", "longdesc"], a: 1 },
+        { q: "Properti CSS yang digunakan untuk mengubah ukuran teks adalah...", o: ["font-size", "text-size", "font-style", "text-style"], a: 0 },
+        { q: "Bagaimana cara membuat komentar di CSS?", o: ["// ini komentar", "/* ini komentar */", "' ini komentar", "&lt;!-- ini komentar --&gt;"], a: 1 },
+        { q: "Properti mana yang digunakan untuk mengubah font suatu elemen di CSS?", o: ["font-family", "font-type", "font-style", "font-weight"], a: 0 },
+        { q: "Bagaimana cara memilih elemen dengan id 'demo' di CSS?", o: [".demo", "*demo", "#demo", "demo"], a: 2 },
+        { q: "Bagaimana cara memilih elemen dengan class 'test' di CSS?", o: ["#test", ".test", "test", "*test"], a: 1 },
+        { q: "Kelebihan utama dari CSS Flexbox adalah...", o: ["Membuat database", "Pengaturan layout satu dimensi yang fleksibel", "Keamanan enkripsi", "Membuat animasi 3D kompleks"], a: 1 },
+        { q: "Metode HTTP mana yang mengirimkan data form secara tersembunyi pada URL?", o: ["GET", "POST", "PUT", "DELETE"], a: 1 },
+        { q: "Apa arti dari status kode HTTP 404?", o: ["OK", "Internal Server Error", "Forbidden", "Not Found"], a: 3 },
+        { q: "Bahasa pemrograman apa yang berjalan secara native (bawaan) di sisi client browser?", o: ["PHP", "Python", "JavaScript", "Java"], a: 2 },
+        { q: "Apa fungsi dari perintah 'console.log()' di JavaScript?", o: ["Menampilkan pesan error ke user", "Menulis pesan ke console developer browser", "Menghapus history browser", "Membuat file log server"], a: 1 },
+        { q: "Manakah operator penugasan (assignment) yang benar di JavaScript?", o: ["=", "==", "===", "equals"], a: 0 },
+        { q: "Simbol mana yang digunakan untuk operator sisa bagi (modulus)?", o: ["/", "mod", "%", "\\"], a: 2 },
+        { q: "Bagaimana cara membuat komentar satu baris di JavaScript?", o: ["&lt;!-- komentar --&gt;", "/* komentar */", "# komentar", "// komentar"], a: 3 },
+        { q: "Tipe data mana yang BUKAN merupakan tipe data primitif di JavaScript?", o: ["String", "Number", "Boolean", "Array"], a: 3 },
+        { q: "Apa kepanjangan dari DOM dalam JavaScript?", o: ["Document Object Model", "Data Object Management", "Digital Optimal Matrix", "Document Operation Module"], a: 0 },
+        { q: "Event listener apa yang dipicu ketika pengguna mengklik elemen HTML?", o: ["onmouseover", "onclick", "onchange", "onsubmit"], a: 1 },
+        { q: "Manakah framework/library JavaScript untuk frontend?", o: ["Laravel", "Django", "React", "Spring Boot"], a: 2 },
+        { q: "Apa kepanjangan dari JSON?", o: ["JavaScript Object Notation", "Java Standard Object Name", "JavaScript Optimized Network", "Jquery Source Object Notation"], a: 0 },
+        { q: "Format file gambar mana yang mendukung latar belakang transparan?", o: ["JPEG", "PNG", "BMP", "TIFF"], a: 1 },
+        { q: "Tag HTML5 mana yang digunakan untuk memutar file audio?", o: ["&lt;sound&gt;", "&lt;music&gt;", "&lt;audio&gt;", "&lt;media&gt;"], a: 2 },
+        { q: "Manakah tag HTML5 yang bersifat semantik?", o: ["&lt;div&gt;", "&lt;span&gt;", "&lt;article&gt;", "&lt;b&gt;"], a: 2 },
+        { q: "Fungsi utama dari CSS Grid adalah layouting berbasis...", o: ["Satu dimensi (baris)", "Dua dimensi (baris dan kolom)", "Teks mengalir", "Animasi halaman"], a: 1 },
+        { q: "Properti CSS untuk mengatur jarak di LUAR border elemen disebut...", o: ["padding", "margin", "spacing", "border-width"], a: 1 },
+        { q: "Properti CSS untuk mengatur jarak di DALAM antara konten dan border disebut...", o: ["margin", "spacing", "padding", "inner-height"], a: 2 },
+        { q: "Apa fungsi utama dari CSS Media Queries?", o: ["Memutar video", "Membuat website responsif sesuai ukuran layar", "Koneksi ke database", "Mempercepat loading gambar"], a: 1 },
+        { q: "Bahasa pemrograman backend yang menggunakan sintaksis JavaScript adalah...", o: ["PHP", "Ruby", "Node.js", "Python"], a: 2 },
+        { q: "Di dalam CSS, nilai 'static', 'relative', 'absolute', dan 'fixed' milik properti apa?", o: ["display", "position", "float", "visibility"], a: 1 },
+        { q: "Metode pencarian array JavaScript mana yang mengembalikan array baru berdasarkan kondisi?", o: ["find()", "filter()", "map()", "forEach()"], a: 1 },
+        { q: "Bagaimana cara mendeklarasikan variabel yang nilainya tidak dapat diubah (konstan)?", o: ["var", "let", "const", "constant"], a: 2 },
+        { q: "Manakah sintaks yang benar untuk menyisipkan file eksternal CSS?", o: ["&lt;link rel='stylesheet' href='style.css'&gt;", "&lt;style src='style.css'&gt;", "&lt;script src='style.css'&gt;", "&lt;css href='style.css'&gt;"], a: 0 },
+        { q: "Manakah sintaks yang benar untuk menyisipkan file eksternal JS?", o: ["&lt;script href='app.js'&gt;", "&lt;script src='app.js'&gt;", "&lt;link src='app.js'&gt;", "&lt;js src='app.js'&gt;"], a: 1 },
+        { q: "Atribut mana yang wajib ada pada tag &lt;img&gt; agar gambar bisa tampil?", o: ["alt", "title", "src", "link"], a: 2 },
+        { q: "Tag mana yang digunakan untuk membuat baris baru pada teks HTML?", o: ["&lt;br&gt;", "&lt;break&gt;", "&lt;lb&gt;", "&lt;newline&gt;"], a: 0 },
+        { q: "Tag mana yang digunakan untuk membuat form input terkelompok?", o: ["&lt;fieldset&gt;", "&lt;group&gt;", "&lt;form-group&gt;", "&lt;box&gt;"], a: 0 },
+        { q: "Apa tujuan utama dari SEO (Search Engine Optimization) pada web development?", o: ["Mengamankan server dari hacker", "Mempercepat query database", "Meningkatkan visibilitas website di mesin pencari", "Mengompres ukuran gambar otomatis"], a: 2 }
+    ];
+
+    let currentQuestionIndex = 0;
+    let userAnswers = new Array(questions.length).fill(null);
+    let identity = { nama: '', nim: '', kelas: '' };
+
+    // Memulai Kuis
+    function startQuiz(event) {
+        event.preventDefault();
+        
+        identity.nama = document.getElementById('nama').value;
+        identity.nim = document.getElementById('nim').value;
+        identity.kelas = document.getElementById('kelas').value;
+
+        document.getElementById('auth-page').classList.add('hidden');
+        document.getElementById('quiz-page').classList.remove('hidden');
+        document.getElementById('display-mhs').innerText = `Mhs: ${identity.nama} (${identity.kelas})`;
+        
+        showQuestion();
+    }
+
+    // Menampilkan Soal aktif
+    function showQuestion() {
+        const currentQuestion = questions[currentQuestionIndex];
+        
+        // Counter dan Progress Bar
+        document.getElementById('question-counter').innerText = `Soal ${currentQuestionIndex + 1} dari ${questions.length}`;
+        const progressPercentage = ((currentQuestionIndex) / questions.length) * 100;
+        document.getElementById('p-bar').style.width = `${progressPercentage}%`;
+
+        // Teks Soal
+        document.getElementById('question-text').innerHTML = `${currentQuestionIndex + 1}. ${currentQuestion.q}`;
+
+        // Render Opsi Jawaban
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        const prefixes = ['A', 'B', 'C', 'D'];
+        currentQuestion.o.forEach((option, index) => {
+            const li = document.createElement('li');
+            li.className = 'option-item';
+            if(userAnswers[currentQuestionIndex] === index) {
+                li.classList.add('selected');
+            }
+            li.onclick = () => selectOption(index);
+
+            li.innerHTML = `
+                <span class="option-prefix">${prefixes[index]}</span>
+                <span>${option}</span>
+            `;
+            optionsContainer.appendChild(li);
+        });
+
+        // Kontrol Tombol Navigasi
+        if (currentQuestionIndex === 0) {
+            document.getElementById('btn-prev').classList.add('hidden');
+        } else {
+            document.getElementById('btn-prev').classList.remove('hidden');
+        }
+
+        const nextBtn = document.getElementById('btn-next');
+        if (currentQuestionIndex === questions.length - 1) {
+            nextBtn.innerText = 'Selesai & Kirim';
+            nextBtn.style.backgroundColor = '#22c55e';
+        } else {
+            nextBtn.innerText = 'Lanjut';
+            nextBtn.style.backgroundColor = 'var(--primary-color)';
+        }
+    }
+
+    // Memilih Opsi
+    function selectOption(index) {
+        userAnswers[currentQuestionIndex] = index;
+        // Re-render soal untuk memperbarui kelas '.selected'
+        showQuestion();
+    }
+
+    // Tombol Lanjut / Selesai
+    function nextQuestion() {
+        if(userAnswers[currentQuestionIndex] === null) {
+            alert("Harap pilih salah satu jawaban terlebih dahulu sebelum melanjutkan!");
+            return;
+        }
+
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            showQuestion();
+        } else {
+            calculateResult();
+        }
+    }
+
+    // Tombol Kembali
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            showQuestion();
+        }
+    }
+
+    // Kalkulasi Skor Akhir
+    function calculateResult() {
+        let correctCount = 0;
+        questions.forEach((question, index) => {
+            if(userAnswers[index] === question.a) {
+                correctCount++;
+            }
+        });
+
+        // Hitung skor skala 100
+        const finalScore = Math.round((correctCount / questions.length) * 100);
+
+        // Render halaman hasil
+        document.getElementById('quiz-page').classList.add('hidden');
+        document.getElementById('result-page').classList.remove('hidden');
+
+        document.getElementById('res-nama').innerText = identity.nama;
+        document.getElementById('res-nim').innerText = identity.nim;
+        document.getElementById('res-kelas').innerText = identity.kelas;
+        document.getElementById('res-waktu').innerText = new Date().toLocaleString('id-ID');
+        
+        document.getElementById('final-score').innerText = finalScore;
+        document.getElementById('score-summary').innerText = `Anda menjawab benar ${correctCount} dari ${questions.length} soal.`;
+    }
+</script>
+</body>
+</html>
